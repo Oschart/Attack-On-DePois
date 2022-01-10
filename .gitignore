@@ -1,0 +1,5 @@
+data/
+dataset/
+.ipynb_checkpoints/
+__pycache__/
+.vscode/
