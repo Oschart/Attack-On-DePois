@@ -4,11 +4,12 @@ Created on Wed Apr 22 21:07:40 2020
 
 @author: zxx
 """
+# %%
 import os
 import matplotlib.pyplot as plt
 import time
 import numpy as np
-import sklearn
+from sklearn import metrics
 
 os.makedirs('images', exist_ok=True)
 os.makedirs('data/weights', exist_ok=True)
@@ -19,6 +20,9 @@ def load_data():
     x_train, y_train = f['x_train'], f['y_train']
     x_test, y_test = f['x_test'], f['y_test']
     f.close()
+    x_train = x_train.reshape(x_train.shape[0], 28, 28, 1)
+    x_test = x_test.reshape(x_test.shape[0], 28, 28, 1)
+
     return (x_train, y_train), (x_test, y_test)
 
 
@@ -44,7 +48,7 @@ def TrueAndGeneratorData(know_rate, epochs):
     Min = np.min(G_data)
     G_data = (G_data - Min) / (Max - Min)
     G_data = G_data * (1 * (G_data > 0.3))
-    xx = np.concatenate((train_data/255,np.squeeze(G_data)), axis = 0)
+    xx = np.concatenate((train_data/255,G_data), axis = 0)
     yy = np.concatenate((train_label,np.squeeze(G_label)), axis =0) # 0 ~ 1
     np.save("data/saved_TrueAndGeneratorData.npy", xx)
     np.save("data/saved_TrueAndGeneratorLabel.npy", yy)
@@ -54,8 +58,11 @@ def TrueAndGeneratorData(know_rate, epochs):
 def poi_data(poison_rate):
         
     poison_number = int(poison_rate * 50000)
-    poisoned_x_data = np.load("data/p_data_%d.npy"%(poison_number))
-    poisoned_y_data = np.load("data/p_label_%d.npy"%(poison_number))
+    data = np.load("dataset/mnist.npz")
+    print(list(data.keys()))
+    poisoned_x_data = data["x_test"]
+    poisoned_y_data = data["y_test"]
+    print(poisoned_x_data.shape, poisoned_y_data.shape)
     poisoned_x_data = poisoned_x_data * 255
     poisoned_x_data = poisoned_x_data.reshape(poisoned_x_data.shape[0],28,28, 1)
     poisoned_x_data = (poisoned_x_data.astype(np.float32) - 127.5) / 127.5
@@ -73,20 +80,20 @@ def count_score(validity, poison_number):
     label_poisoned_fake = np.ones(validity.shape[0])
     label_poisoned_fake[f_poisoned_data] = 0
     
-    P = sklearn.metrics.precision_score(label_poisoned_real,label_poisoned_fake.astype(float),average='binary')
-    R = sklearn.metrics.recall_score(label_poisoned_real,label_poisoned_fake.astype(float),average='binary')
+    P = metrics.precision_score(label_poisoned_real,label_poisoned_fake.astype(float),average='binary')
+    R = metrics.recall_score(label_poisoned_real,label_poisoned_fake.astype(float),average='binary')
     F1 = (2 * P * R) / (P + R)
-    acc = sklearn.metrics.accuracy_score(label_poisoned_real,label_poisoned_fake.astype(float))
+    acc = metrics.accuracy_score(label_poisoned_real,label_poisoned_fake.astype(float))
     
     return F1, P, R, acc
 
 
 
-def modle_defense(poi_rate,  epochs):
+def model_defense(poi_rate,  epochs):
     
     (X_train, y_train), (_, _) = load_data()
     X_train = (X_train.astype(np.float32) - 127.5) / 127.5
-    X_train = np.expand_dims(X_train, axis=1)
+    #X_train = np.expand_dims(X_train, axis=1)
     
     poison_number, poisoned_x_data, poisoned_y_data = poi_data(poi_rate)
     x_poisoned_raw_test = np.concatenate((X_train[0:50000],poisoned_x_data))   
@@ -131,4 +138,4 @@ if __name__ == '__main__':
 
     TrueAndGeneratorData(know_rate, 200)
 
-    modle_defense(poi_rate, 200)
+    model_defense(poi_rate, 200)

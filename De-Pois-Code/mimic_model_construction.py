@@ -10,12 +10,13 @@ from keras.layers.merge import _Merge
 from keras.layers import Input, Dense, Reshape, Flatten, Dropout, multiply
 from keras.layers import BatchNormalization, Activation, ZeroPadding2D, Embedding
 from keras.layers.advanced_activations import LeakyReLU
-from keras.layers.convolutional import UpSampling2D, Conv2D
+#from keras.layers.convolutional import UpSampling2D, Conv2D
 from keras.models import Sequential, Model, load_model
-from keras.optimizers import RMSprop
-from keras.optimizers import Adam
+from tensorflow.keras.optimizers import RMSprop
+#from keras.optimizers import Adam
 from functools import partial
-
+from tensorflow.python.framework.ops import disable_eager_execution
+#disable_eager_execution()
 import keras.backend as K
 import os
 import matplotlib.pyplot as plt
@@ -40,7 +41,7 @@ class CWGANGP():
         self.img_cols = 28
         self.channels = 1
         self.nclasses = 10
-        self.img_shape = (self.channels,self.img_rows, self.img_cols )
+        self.img_shape = (self.img_rows, self.img_cols, self.channels)
         self.latent_dim = 100
         self.losslog = []
         self.epochs = epochs
@@ -95,6 +96,8 @@ class CWGANGP():
                                         partial_gp_loss],
                                         optimizer=optimizer,
                                         loss_weights=[1, 1, 10])
+        print("CRITIC MODEL SUMMARY BROOOOOOOO")
+        self.critic_model.summary()
         #-------------------------------
         # Construct Computational Graph
         #         for Generator
@@ -204,7 +207,7 @@ class CWGANGP():
 
         # Rescale -1 to 1
         X_train = (X_train.astype(np.float32) - 0.5) / 0.5
-        X_train = np.expand_dims(X_train, axis=1)
+        #X_train = np.expand_dims(X_train, axis=1)
 
         # Adversarial ground truths
         valid = -np.ones((self.batch_size, 1))
@@ -279,6 +282,7 @@ class CWGANGP():
                 axs[i,j].imshow(gen_imgs[cnt, 0,:,:], cmap='gray')
                 axs[i,j].axis('off')
                 cnt += 1
+        os.makedirs('images_cwgan_gp', exist_ok=True)
         fig.savefig("images_cwgan_gp/mnist_%d.png" % (epoch))
         plt.close()
         
