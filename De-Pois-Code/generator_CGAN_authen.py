@@ -9,11 +9,11 @@ from keras.layers import Input, Dense, Reshape, Flatten, Dropout, multiply
 from keras.layers import BatchNormalization, Activation, Embedding
 from keras.layers.advanced_activations import LeakyReLU
 from keras.models import Sequential, Model
-from keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 
 from keras import backend as K  
-K.set_image_data_format('channels_first')
+K.set_image_data_format('channels_last')
 #'channels_first'` or `'channels_last'
 
 import time
@@ -24,22 +24,22 @@ def build_lenet():
     model = Sequential()
 
     # first set of CONV => RELU => POOL
-    model.add(Convolution2D(20, 5, 5, border_mode="same",
-                            input_shape=(1, 28, 28)))
+    model.add(Convolution2D(20, 5, 5, padding="same",
+                            input_shape=(28, 28, 1)))
     model.add(Activation("relu"))
-    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding="same"))
 
     # second set of CONV => RELU => POOL
-    model.add(Convolution2D(50, 5, 5, border_mode="same"))
+    model.add(Convolution2D(50, 5, 5, padding="same"))
     model.add(Activation("relu"))
-    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding="same"))
 
     # set of FC => RELU layers
     model.add(Flatten())
     model.add(Dense(500))
     model.add(Activation("relu"))
 
-    image = Input(shape=(1, 28, 28))
+    image = Input(shape=(28, 28, 1))
 
     features = model(image)
 
@@ -47,7 +47,7 @@ def build_lenet():
     # belongs to.
     aux = Dense(10, activation='softmax', name='auxiliary')(features)
 
-    return Model(input=image, output=aux)
+    return Model(image, aux)
 
 def one_hot(labels, class_size): 
     targets = torch.zeros(labels.shape[0], class_size)
@@ -185,7 +185,7 @@ class CGAN():
             d_loss_real = self.discriminator.train_on_batch([imgs, labels], valid)
             d_loss_fake = self.discriminator.train_on_batch([gen_imgs, labels], fake)
             d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
-            X = np.concatenate((imgs.reshape(32,1,28,28), gen_imgs.reshape(32,1,28,28)))
+            X = np.concatenate((imgs.reshape(32,28,28, 1), gen_imgs.reshape(32,28,28, 1)))
             aux_y = np.concatenate((one_hot(np.squeeze(labels), 10), one_hot(np.squeeze(labels), 10)), axis=0)                
             epoch_lenet_loss = lenet.train_on_batch(X, aux_y)
             d_loss[0] = d_loss[0] + epoch_lenet_loss[0]
@@ -221,8 +221,8 @@ class CGAN():
     
         # Generate a half batch of new images
         gen_imgs = self.generator.predict([noise, labels])
-        np.save("Generator_data_%d_%d.npy"%(data_size,epochs),gen_imgs)
-        np.save("Generator_label_%d_%d.npy"%(data_size,epochs),labels)
+        np.save(f"data/Generator_data_{data_size}_{epochs}.npy", gen_imgs)
+        np.save(f"data/Generator_label_{data_size}_{epochs}.npy", labels)
     
     def sample_images(self, epoch):
         r, c = 2, 5
@@ -245,15 +245,15 @@ class CGAN():
 
 def save_train_data(know_rate):
     
-    path = 'mnist.npz'
+    path = 'dataset/mnist.npz'
     f = np.load(path)
     x_train, y_train = f['x_train'], f['y_train']
     know_number = int(x_train.shape[0] * know_rate)
     generator_size = int(x_train.shape[0] - know_number)
     data = x_train[0:know_number,:,:]
     label = y_train[0:know_number]
-    np.save("train_data_%d.npy"%know_number,data)
-    np.save("train_label_%d.npy"%know_number,label)
+    np.save("data/train_data_%d.npy"%know_number,data)
+    np.save("data/train_label_%d.npy"%know_number,label)
     
     return know_number, generator_size
 
@@ -261,24 +261,13 @@ def save_train_data(know_rate):
 def CGAN_data_loss(know_rate, epochs):
     
     know_rate = 0.2
-    epochs = 200 
     know_number, generator_size = save_train_data(know_rate)
-    train_data = np.load("train_data_%d.npy"%know_number)
-    train_label = np.load("train_label_%d.npy"%know_number)
+    train_data = np.load("data/train_data_%d.npy"%know_number)
+    train_label = np.load("data/train_label_%d.npy"%know_number)
 
     start =time.perf_counter()
     cgan = CGAN()
     cgan.train(train_data, train_label,epochs, batch_size=32, sample_interval=10)
-    cgan.save_data(train_data, train_label,epochs,generator_size)
+    cgan.save_data(train_data, train_label, epochs, generator_size)
     end = time.perf_counter()
     print('CGAN_data_loss Running time: %s Seconds'%(end-start))
-    
-
-
-
-    
-    
-    
-    
-    
-    

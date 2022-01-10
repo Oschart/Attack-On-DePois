@@ -199,8 +199,8 @@ class CWGANGP():
 
         # Load the dataset
 
-        X_train = np.load("saved_TrueAndGeneratorData.npy")  
-        y_train = np.load("saved_TrueAndGeneratorLabel.npy") 
+        X_train = np.load("data/saved_TrueAndGeneratorData.npy")  
+        y_train = np.load("data/saved_TrueAndGeneratorLabel.npy") 
 
         # Rescale -1 to 1
         X_train = (X_train.astype(np.float32) - 0.5) / 0.5
@@ -252,12 +252,12 @@ class CWGANGP():
                 if (epoch+1) % self.sample_interval == 0:
                     print ("%d [D loss: %f] [G loss: %f]" % (epoch, d_loss[0], g_loss))
                     self.sample_images(epoch)
-                    self.generator.save_weights('weights/generator_CWGANGP_%d'%(epoch+1), overwrite=True)
-                    self.critic.save_weights('weights/discriminator_CWGANGP_%d'%(epoch+1), overwrite=True)
+                    self.generator.save_weights('data/weights/generator_CWGANGP_%d'%(epoch+1), overwrite=True)
+                    self.critic.save_weights('data/weights/discriminator_CWGANGP_%d'%(epoch+1), overwrite=True)
 
-            np.save('loss.npy',self.losslog)
-            self.generator.save_weights('generator_CWGANGP_%d'%self.epochs, overwrite=True)
-            self.critic.save_weights('discriminator_CWGANGP_%d'%self.epochs, overwrite=True)
+            np.save('data/loss.npy',self.losslog)
+            self.generator.save_weights('data/generator_CWGANGP_%d'%self.epochs, overwrite=True)
+            self.critic.save_weights('data/discriminator_CWGANGP_%d'%self.epochs, overwrite=True)
             print('save the CWGANGP model')
 
 
@@ -308,13 +308,13 @@ class CWGANGP():
         plt.imshow(gen_imgs[0,0,:,:], cmap='gray')
 
     def discriminate_img(self, img, label):
-        self.critic.load_weights('weights/discriminator_CWGANGP_%d'%self.epochs)
+        self.critic.load_weights('data/weights/discriminator_CWGANGP_%d'%self.epochs)
         validity = self.critic.predict([img, label])
         return validity
     
     def savemodel(self,epoch):
-        self.generator.save_weights('weights/generator_%d'%epoch, overwrite=True)
-        self.critic.save_weights('weights/discriminator_%d'%epoch, overwrite=True)
+        self.generator.save_weights('data/weights/generator_%d'%epoch, overwrite=True)
+        self.critic.save_weights('data/weights/discriminator_%d'%epoch, overwrite=True)
 
 
 

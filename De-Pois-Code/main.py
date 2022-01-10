@@ -10,9 +10,11 @@ import time
 import numpy as np
 import sklearn
 
+os.makedirs('images', exist_ok=True)
+os.makedirs('data/weights', exist_ok=True)
 def load_data():
 
-    path = 'mnist.npz'
+    path = 'dataset/mnist.npz'
     f = np.load(path)
     x_train, y_train = f['x_train'], f['y_train']
     x_test, y_test = f['x_test'], f['y_test']
@@ -28,15 +30,15 @@ def TrueAndGeneratorData(know_rate, epochs):
     train_label = y[0:trainct]
     generator_size = len(y) - trainct
 
-    if (os.path.exists("Generator_data_%d_%d.npy"%(generator_size,epochs))):
-        G_data = np.load("Generator_data_%d_%d.npy"%(generator_size,epochs))
-        G_label = np.load("Generator_label_%d_%d.npy"%(generator_size,epochs))
+    if (os.path.exists("data/Generator_data_%d_%d.npy"%(generator_size,epochs))):
+        G_data = np.load(f"data/Generator_data_{generator_size}_{epochs}.npy")
+        G_label = np.load(f"data/Generator_label_{generator_size}_{epochs}.npy")
     else:
         from generator_CGAN_authen import CGAN_data_loss
         CGAN_data_loss(know_rate, epochs)
         
-        G_data = np.load("Generator_data_%d_%d.npy"%(generator_size,epochs))
-        G_label = np.load("Generator_label_%d_%d.npy"%(generator_size,epochs))
+        G_data = np.load(f"data/Generator_data_{generator_size}_{epochs}.npy")
+        G_label = np.load(f"data/Generator_label_{generator_size}_{epochs}.npy")
     
     Max = np.max(G_data)
     Min = np.min(G_data)
@@ -44,18 +46,18 @@ def TrueAndGeneratorData(know_rate, epochs):
     G_data = G_data * (1 * (G_data > 0.3))
     xx = np.concatenate((train_data/255,np.squeeze(G_data)), axis = 0)
     yy = np.concatenate((train_label,np.squeeze(G_label)), axis =0) # 0 ~ 1
-    np.save("saved_TrueAndGeneratorData.npy", xx)
-    np.save("saved_TrueAndGeneratorLabel.npy", yy)
+    np.save("data/saved_TrueAndGeneratorData.npy", xx)
+    np.save("data/saved_TrueAndGeneratorLabel.npy", yy)
     print('CGAN_loss True And Generator Data saved!')
         
 
 def poi_data(poison_rate):
         
     poison_number = int(poison_rate * 50000)
-    poisoned_x_data = np.load("p_data_%d.npy"%(poison_number))
-    poisoned_y_data = np.load("p_label_%d.npy"%(poison_number))
+    poisoned_x_data = np.load("data/p_data_%d.npy"%(poison_number))
+    poisoned_y_data = np.load("data/p_label_%d.npy"%(poison_number))
     poisoned_x_data = poisoned_x_data * 255
-    poisoned_x_data = poisoned_x_data.reshape(poisoned_x_data.shape[0],1,28,28)
+    poisoned_x_data = poisoned_x_data.reshape(poisoned_x_data.shape[0],28,28, 1)
     poisoned_x_data = (poisoned_x_data.astype(np.float32) - 127.5) / 127.5
     
     return poison_number, poisoned_x_data, poisoned_y_data
@@ -127,24 +129,6 @@ if __name__ == '__main__':
     poi_rate = 0.30
     know_rate = 0.20
 
-    TrueAndGeneratorData(know_rate, 200000)
+    TrueAndGeneratorData(know_rate, 200)
 
-    modle_defense(poi_rate, 200000)
-    
-
-
-
-
-
-    
-    
-    
-    
-
-
-
-
-
-
-
-
+    modle_defense(poi_rate, 200)
