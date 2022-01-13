@@ -3,3 +3,5 @@ dataset/
 .ipynb_checkpoints/
 __pycache__/
 .vscode/
+De-Pois-Code/images/
+De-Pois-Code/images_cwgan_gp/

@@ -15,8 +15,8 @@ from keras.models import Sequential, Model, load_model
 from tensorflow.keras.optimizers import RMSprop
 #from keras.optimizers import Adam
 from functools import partial
-from tensorflow.python.framework.ops import disable_eager_execution
-#disable_eager_execution()
+from tensorflow.python.framework.ops import disable_eager_execution, enable_eager_execution
+disable_eager_execution()
 import keras.backend as K
 import os
 import matplotlib.pyplot as plt
@@ -95,7 +95,7 @@ class CWGANGP():
                                         self.wasserstein_loss,
                                         partial_gp_loss],
                                         optimizer=optimizer,
-                                        loss_weights=[1, 1, 10])
+                                        loss_weights=[1, 1, 1])
         print("CRITIC MODEL SUMMARY BROOOOOOOO")
         self.critic_model.summary()
         #-------------------------------
@@ -268,7 +268,7 @@ class CWGANGP():
     def sample_images(self, epoch):
         r, c = 10, 10
         noise = np.random.normal(0, 1, (r * c, self.latent_dim))
-        sampled_labels = np.array(list(range(10))*10).reshape(-1, 1)
+        sampled_labels = np.array(list(range(r))*c).reshape(-1, 1)
         
         gen_imgs = self.generator.predict([noise, sampled_labels])
 
@@ -279,7 +279,7 @@ class CWGANGP():
         cnt = 0
         for i in range(r):
             for j in range(c):
-                axs[i,j].imshow(gen_imgs[cnt, 0,:,:], cmap='gray')
+                axs[i,j].imshow(gen_imgs[cnt,:,:], cmap='gray')
                 axs[i,j].axis('off')
                 cnt += 1
         os.makedirs('images_cwgan_gp', exist_ok=True)

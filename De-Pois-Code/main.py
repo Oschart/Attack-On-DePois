@@ -11,6 +11,7 @@ import time
 import numpy as np
 from sklearn import metrics
 
+
 os.makedirs('images', exist_ok=True)
 os.makedirs('data/weights', exist_ok=True)
 def load_data():
@@ -34,7 +35,7 @@ def TrueAndGeneratorData(know_rate, epochs):
     train_label = y[0:trainct]
     generator_size = len(y) - trainct
 
-    if (os.path.exists("data/Generator_data_%d_%d.npy"%(generator_size,epochs))):
+    if (os.path.exists("data/Generator_data_%d_%d.npy"%(generator_size, epochs))):
         G_data = np.load(f"data/Generator_data_{generator_size}_{epochs}.npy")
         G_label = np.load(f"data/Generator_label_{generator_size}_{epochs}.npy")
     else:
@@ -58,15 +59,15 @@ def TrueAndGeneratorData(know_rate, epochs):
 def poi_data(poison_rate):
         
     poison_number = int(poison_rate * 50000)
-    data = np.load("dataset/mnist.npz")
+    data = np.load("dataset/poisoned_data/GP_mnist.npz")
     print(list(data.keys()))
-    poisoned_x_data = data["x_test"]
-    poisoned_y_data = data["y_test"]
-    print(poisoned_x_data.shape, poisoned_y_data.shape)
+    poisoned_x_data = data["X"][:, 4, :,:]
+    poisoned_y_data = data["Y"][:, 4]-1
     poisoned_x_data = poisoned_x_data * 255
     poisoned_x_data = poisoned_x_data.reshape(poisoned_x_data.shape[0],28,28, 1)
     poisoned_x_data = (poisoned_x_data.astype(np.float32) - 127.5) / 127.5
-    
+    print(poisoned_x_data.min(), poisoned_x_data.max())
+
     return poison_number, poisoned_x_data, poisoned_y_data
 
 
@@ -97,11 +98,11 @@ def model_defense(poi_rate,  epochs):
     
     poison_number, poisoned_x_data, poisoned_y_data = poi_data(poi_rate)
     x_poisoned_raw_test = np.concatenate((X_train[0:50000],poisoned_x_data))   
-    y_poisoned_raw_test = np.concatenate((y_train[0:50000],poisoned_y_data))
+    y_poisoned_raw_test = np.concatenate((y_train[0:50000],np.squeeze(poisoned_y_data)))
     
     from mimic_model_construction import CWGANGP
     batch_size = 32
-    sample_interval = 100
+    sample_interval = 500
     will_load_model = False
     
     start = time.perf_counter()
@@ -131,11 +132,12 @@ def model_defense(poi_rate,  epochs):
 
 
 
-    
 if __name__ == '__main__':
     poi_rate = 0.30
     know_rate = 0.20
-
-    TrueAndGeneratorData(know_rate, 200)
-
-    model_defense(poi_rate, 200)
+    steps = 13700
+    #data = poi_data(5)
+    #dataset = load_data()
+    #generated_data = np.load('data/Generator_data_48000_200000.npy')
+    TrueAndGeneratorData(know_rate, steps)
+    model_defense(poi_rate, steps)

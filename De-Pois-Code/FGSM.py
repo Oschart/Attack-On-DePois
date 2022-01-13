@@ -2,10 +2,13 @@
 #def loss_object(labels, validity):
 from keras.backend import sign
 import tensorflow as tf
-from mimic_model_construction import CWGANGP
+from mimic_model_construction import *
 from main import load_data
 import matplotlib.pyplot as plt
 import numpy as np
+import pickle as pickle
+enable_eager_execution()
+
 batch_size = 32
 sample_interval = 100
 epochs = 200
@@ -37,9 +40,9 @@ def create_adversarial_pattern( img, label):
 
   return signed_grad.numpy()
 
+
 epsilons = [0, 0.01, 0.1, 0.15]
 adv_imgs_dict = {eps: [] for eps in epsilons}
-# load dataset
 
 for img, label in zip(x_test, y_test):
   img = np.expand_dims(img, axis=0)
@@ -48,12 +51,12 @@ for img, label in zip(x_test, y_test):
   perturbations = create_adversarial_pattern(img, label)
   for eps in epsilons:
     adv_x = img + perturbations*eps
-    print(type(adv_x), type(img), type(perturbations))
     #adv_x = tf.clip_by_value(adv_x, -1, 1)
     adv_x = np.squeeze(np.clip(adv_x, -1, 1))
     # adv_img_array = tf.make_ndarray(adv_x)
     adv_imgs_dict[eps].append((adv_x, label))
-  plt.figure()
-  plt.imshow(adv_x*0.5+0.5)
-  plt.title('noise')
-  plt.show()
+  
+os.makedirs('dataset/adversarial', exist_ok=True)
+with open('dataset/adversarial/adversarial_x_test.pkl', 'wb') as f:
+    pickle.dump(adv_imgs_dict, f)
+disable_eager_execution()

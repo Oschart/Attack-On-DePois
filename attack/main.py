@@ -93,5 +93,3 @@ student_scratch.compile(
 student_scratch.fit(x_train, y_train, epochs=3)
 
 student_scratch.evaluate(x_test, y_test)
-
-
