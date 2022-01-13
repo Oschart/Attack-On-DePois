@@ -59,7 +59,7 @@ def TrueAndGeneratorData(know_rate, epochs):
 def poi_data(poison_rate):
         
     poison_number = int(poison_rate * 50000)
-    data = np.load("dataset/poisoned_data/GP_mnist.npz")
+    data = np.load("dataset/GP_mnist.npz")
     print(list(data.keys()))
     poisoned_x_data = data["X"][:, 4, :,:]
     poisoned_y_data = data["Y"][:, 4]-1
