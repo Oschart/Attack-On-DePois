@@ -23,6 +23,8 @@ def load_data():
     f.close()
     x_train = x_train.reshape(x_train.shape[0], 28, 28, 1)
     x_test = x_test.reshape(x_test.shape[0], 28, 28, 1)
+    x_train = (x_train.astype(np.float32) - 127.5) / 127.5
+    x_test = (x_test.astype(np.float32) - 127.5) / 127.5
 
     return (x_train, y_train), (x_test, y_test)
 
@@ -35,9 +37,10 @@ def TrueAndGeneratorData(know_rate, epochs):
     train_label = y[0:trainct]
     generator_size = len(y) - trainct
 
-    if (os.path.exists("data/Generator_data_%d_%d.npy"%(generator_size, epochs))):
-        G_data = np.load(f"data/Generator_data_{generator_size}_{epochs}.npy")
-        G_label = np.load(f"data/Generator_label_{generator_size}_{epochs}.npy")
+    if (os.path.exists("data/Generator_data_48000_200000.npy")):
+        G_data = np.load(f"data/Generator_data_48000_200000.npy")
+        G_label = np.load(f"data/Generator_label_48000_200000.npy")
+        print("Loaded generator data successfully!")
     else:
         from generator_CGAN_authen import CGAN_data_loss
         CGAN_data_loss(know_rate, epochs)
@@ -68,7 +71,7 @@ def poi_data(poison_rate):
     poisoned_x_data = (poisoned_x_data.astype(np.float32) - 127.5) / 127.5
     print(poisoned_x_data.min(), poisoned_x_data.max())
 
-    return poison_number, poisoned_x_data, poisoned_y_data
+    return len(poisoned_x_data), poisoned_x_data, poisoned_y_data
 
 
 def count_score(validity, poison_number):
@@ -90,10 +93,9 @@ def count_score(validity, poison_number):
 
 
 
-def model_defense(poi_rate,  epochs):
-    
+def model_defense(poi_rate,  epochs, will_load_model=False):
+    print("starting model defense!")
     (X_train, y_train), (_, _) = load_data()
-    X_train = (X_train.astype(np.float32) - 127.5) / 127.5
     #X_train = np.expand_dims(X_train, axis=1)
     
     poison_number, poisoned_x_data, poisoned_y_data = poi_data(poi_rate)
@@ -103,7 +105,6 @@ def model_defense(poi_rate,  epochs):
     from mimic_model_construction import CWGANGP
     batch_size = 32
     sample_interval = 500
-    will_load_model = False
     
     start = time.perf_counter()
     wgan = CWGANGP(epochs, batch_size, sample_interval)
@@ -113,6 +114,7 @@ def model_defense(poi_rate,  epochs):
 
     D_poi = wgan.discriminate_img(x_poisoned_raw_test, y_poisoned_raw_test)
     D_poi = D_poi.flatten()
+    print(D_poi.max(), D_poi.min())
     plt.figure()
     plt.title('CWGANGP D_value')  
     plt.hist(D_poi[0:50000],bins = 100,color = 'b')
@@ -135,9 +137,10 @@ def model_defense(poi_rate,  epochs):
 if __name__ == '__main__':
     poi_rate = 0.30
     know_rate = 0.20
-    steps = 13700
+    steps = 10000
     #data = poi_data(5)
     #dataset = load_data()
     #generated_data = np.load('data/Generator_data_48000_200000.npy')
     TrueAndGeneratorData(know_rate, steps)
-    model_defense(poi_rate, steps)
+    model_defense(poi_rate, steps, will_load_model=True)
+# %%
