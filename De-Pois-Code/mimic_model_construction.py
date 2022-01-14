@@ -95,7 +95,7 @@ class CWGANGP():
                                         self.wasserstein_loss,
                                         partial_gp_loss],
                                         optimizer=optimizer,
-                                        loss_weights=[1, 1, 1])
+                                        loss_weights=[1, 1, 10])
         print("CRITIC MODEL SUMMARY BROOOOOOOO")
         self.critic_model.summary()
         #-------------------------------
@@ -215,13 +215,10 @@ class CWGANGP():
         dummy = np.zeros((self.batch_size, 1)) # Dummy gt for gradient penalty
         
         if will_load_model:
-            if (os.path.exists("generator_CWGANGP_%d"%self.epochs)) :
-                self.generator.load_weights('generator_CWGANGP_%d'%self.epochs)
-                self.critic.load_weights('discriminator_CWGANGP_%d'%self.epochs)
-                print('The %d trained CWGANGP model loaded!'%self.epochs)
-                
-            else:
-                print('There is not %d trained CWGANGP modle!'%self.epochs)
+            self.generator.load_weights(f'data/weights/generator_CWGANGP_{self.epochs}')
+            self.critic.load_weights(f'data/weights/discriminator_CWGANGP_{self.epochs}')
+            print('The %d trained CWGANGP model loaded!'%self.epochs)
+            #print('There is not %d trained CWGANGP model!'%self.epochs)
         else:
             for epoch in range(self.epochs):
                 for _ in range(self.n_critic):
