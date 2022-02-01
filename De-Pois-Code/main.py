@@ -10,22 +10,22 @@ import matplotlib.pyplot as plt
 import time
 import numpy as np
 from sklearn import metrics
-
+import keras
 
 os.makedirs('images', exist_ok=True)
 os.makedirs('data/weights', exist_ok=True)
-def load_data():
 
-    path = 'dataset/mnist.npz'
-    f = np.load(path)
-    x_train, y_train = f['x_train'], f['y_train']
-    x_test, y_test = f['x_test'], f['y_test']
-    f.close()
+def preprocess_data(x_train, x_test):
     x_train = x_train.reshape(x_train.shape[0], 28, 28, 1)
     x_test = x_test.reshape(x_test.shape[0], 28, 28, 1)
     x_train = (x_train.astype(np.float32) - 127.5) / 127.5
     x_test = (x_test.astype(np.float32) - 127.5) / 127.5
+    return x_train, x_test
 
+def load_data():
+
+    (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+    x_train, x_test = preprocess_data(x_train, x_test)
     return (x_train, y_train), (x_test, y_test)
 
 
