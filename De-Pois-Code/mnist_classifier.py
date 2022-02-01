@@ -3,7 +3,6 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import numpy as np
-from distiller import Distiller
 import os
 
 class MNISTClassifier():
@@ -51,3 +50,5 @@ class MNISTClassifier():
             self.classifier.save(self.model_pth)
         else:
             self.classifier.save(save_pth)
+    def predict(self, x_test):
+        return self.classifier.predict(x_test)
