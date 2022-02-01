@@ -47,7 +47,7 @@ class DePoisModel():
         self.critic = wgan.critic
 
     def load_classifier(self):
-        self.classifier = MNISTClassifier(load=True).classifier
+        self.classifier = MNISTClassifier(load=True)
 
     def compute_decision_bound(self, X_t, y_t):
         validity = self.critic.predict([X_t, y_t]).flatten()
