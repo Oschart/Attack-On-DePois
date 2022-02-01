@@ -7,7 +7,8 @@ from distiller import Distiller
 import os
 
 class MNISTClassifier():
-    def __init__(self, load=False, load_pth='classifier/mnist_classifier') -> None:
+    def __init__(self, load=False, load_pth='weights/mnist_classifier') -> None:
+        self.model_pth = load_pth
         if load:
             self.classifier =  keras.models.load_model(load_pth)
         else:
@@ -47,7 +48,6 @@ class MNISTClassifier():
         return self.classifier.evaluate(x_test, y_test)
     def save(self, save_pth=None):
         if save_pth is None:
-            os.makedirs('classifier', exist_ok=True)
-            self.classifier.save('classifier/mnist_classifier')
+            self.classifier.save(self.model_pth)
         else:
             self.classifier.save(save_pth)

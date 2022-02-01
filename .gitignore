@@ -7,3 +7,9 @@ De-Pois-Code/images_cwgan_gp/
 De-Pois-Code/dataset/*.pkl
 De-Pois-Code/dataset/
 De-Pois-Code/dataset/adversarial_x_test.pkl
+De-Pois-Code/depois_attack.py
+De-Pois-Code/weights/checkpoint
+De-Pois-Code/weights/discriminator_CWGANGP_10000.data-00000-of-00001
+De-Pois-Code/weights/discriminator_CWGANGP_10000.index
+De-Pois-Code/weights/discriminator_CWGANGP_13700.hdf5
+De-Pois-Code/weights/generator_CWGANGP_13700
