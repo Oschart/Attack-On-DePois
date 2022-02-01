@@ -4,3 +4,6 @@ __pycache__/
 .vscode/
 De-Pois-Code/images/
 De-Pois-Code/images_cwgan_gp/
+De-Pois-Code/dataset/*.pkl
+De-Pois-Code/dataset/
+De-Pois-Code/dataset/adversarial_x_test.pkl

@@ -75,6 +75,7 @@ def poi_data(poison_rate):
 
 
 def count_score(validity, poison_number):
+    # real 1, poi 0
     label_poisoned_real = np.ones(validity.shape[0])
     label_poisoned_real[-poison_number:] = 0
     
@@ -88,8 +89,10 @@ def count_score(validity, poison_number):
     R = metrics.recall_score(label_poisoned_real,label_poisoned_fake.astype(float),average='binary')
     F1 = (2 * P * R) / (P + R)
     acc = metrics.accuracy_score(label_poisoned_real,label_poisoned_fake.astype(float))
-    
-    return F1, P, R, acc
+    acc_adv = metrics.accuracy_score(label_poisoned_real[-poison_number:],label_poisoned_fake[-poison_number:].astype(float))
+    acc_real = metrics.accuracy_score(label_poisoned_real[0:-poison_number],label_poisoned_fake[0:-poison_number].astype(float))
+
+    return F1, P, R, acc, acc_adv, acc_real
 
 
 
@@ -143,4 +146,3 @@ if __name__ == '__main__':
     #generated_data = np.load('data/Generator_data_48000_200000.npy')
     TrueAndGeneratorData(know_rate, steps)
     model_defense(poi_rate, steps, will_load_model=True)
-# %%
