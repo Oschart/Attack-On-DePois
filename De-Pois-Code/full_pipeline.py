@@ -19,11 +19,10 @@ depois_attack = DePoisAttack()
 overall_stats = {}
 for critic_first in [True, False]:
     overall_stats[critic_first] = {}
-    for eps in [0.1, 0.5]:
+    for eps in np.linspace(0, 1, 11):
         x_test_adv, _ = depois_attack.wb_attack(depois_model, (x_test, y_test), eps, critic_first=critic_first)
         stats = depois_model.evaluate(x_test, x_test_adv, y_test, eps)
         overall_stats[critic_first][eps] = stats
 pickle.dump(overall_stats, open('stats/overall_stats.pkl', 'wb'))
 graph_stats(overall_stats)
 
-# %%
