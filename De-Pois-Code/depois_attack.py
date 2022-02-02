@@ -22,7 +22,7 @@ from tensorflow.python.framework.ops import (disable_eager_execution,
 from tqdm import tqdm
 
 from critic_distiller import CriticDistiller
-
+from classifier_distiller import ClassifierDistiller
 from main import *
 from main import load_data
 from mimic_model_construction import *
@@ -82,20 +82,17 @@ class DePoisAttack():
 	def clone_critic_model(self, data):
 
 		# Initialize and compile distiller
-		distiller = CriticDistiller()
-		distiller.compile(
-			optimizer=keras.optimizers.Adam(),
-			distillation_loss_fn=keras.losses.KLDivergence(),
-			alpha=0.1,
-			temperature=1,
-		)
+		critic_distiller = CriticDistiller()
+		critic_distiller.distill(data)
+	
+		return critic_distiller
+	
+	def clone_classifier(self, data):
 
-		(x_train, y_train), (x_test, y_test) = data
-
-		# Distill teacher to student
-		distiller.fit(x_train, y_train, batch_size=2084, epochs=10)
-
-		return distiller
+		# Initialize and compile distiller
+		classifier_distiller = ClassifierDistiller()
+		classifier_distiller.distill(data)
+		return classifier_distiller
 
 	def wb_attack(self, depois_model, D_src, eps, critic_first=True):
 		if critic_first:
