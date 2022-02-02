@@ -21,6 +21,8 @@ from tensorflow.python.framework.ops import (disable_eager_execution,
 											 enable_eager_execution)
 from tqdm import tqdm
 
+from critic_distiller import CriticDistiller
+from classifier_distiller import ClassifierDistiller
 from main import *
 from main import load_data
 from mimic_model_construction import *
@@ -77,8 +79,20 @@ class DePoisAttack():
 		pkl.dump(adv_dataset, open(adv_dataset_pth, "wb"))
 		return np.array(X_adv), y_src
 
-	def clone_model(self, src_model, clone_model):
-		return
+	def clone_critic_model(self, data):
+
+		# Initialize and compile distiller
+		critic_distiller = CriticDistiller()
+		critic_distiller.distill(data)
+	
+		return critic_distiller
+	
+	def clone_classifier(self, data):
+
+		# Initialize and compile distiller
+		classifier_distiller = ClassifierDistiller()
+		classifier_distiller.distill(data)
+		return classifier_distiller
 
 	def wb_attack(self, depois_model, D_src, eps, critic_first=True):
 		if critic_first:
