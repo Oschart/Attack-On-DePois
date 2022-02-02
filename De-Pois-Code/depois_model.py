@@ -57,8 +57,11 @@ class DePoisModel():
         z_score = np.mean(validity) - np.std(validity)
         return z_score
 
-    def predict(self, X):
-        y_pred = np.argmax(self.classifier.predict(X), axis=1)
+    def predict(self, X, y=None):
+        if y:
+            y_pred = y
+        else:
+            y_pred = np.argmax(self.classifier.predict(X), axis=1)
         is_poisoned_idx = self.check_poisoned(X, y_pred)
         # Deactivate the classifier label for poisoned data
         y_pred[is_poisoned_idx] = -1
