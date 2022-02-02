@@ -28,6 +28,8 @@ from mnist_classifier import MNISTClassifier
 
 disable_eager_execution()
 
+K.set_image_data_format('channels_first')
+
 
 class DePoisModel():
     def __init__(self, D_trust):
@@ -36,6 +38,7 @@ class DePoisModel():
 
     def load_models(self):
         self.load_critic()
+        self.load_classifier()
 
     def load_critic(self):
         epochs = 10000
