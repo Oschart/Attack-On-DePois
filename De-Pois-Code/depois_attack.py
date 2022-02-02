@@ -43,7 +43,7 @@ class DePoisAttack():
 		label = tf.cast(label, dtype=tf.float32)
 		with tf.GradientTape() as tape:
 			tape.watch(img)
-			if model_type == 'critic':
+			if 'critic' in model_type:
 				prediction = model([img, label])
 				loss = self.wasserstein_loss(1, prediction)
 			else:
@@ -79,20 +79,17 @@ class DePoisAttack():
 		pkl.dump(adv_dataset, open(adv_dataset_pth, "wb"))
 		return np.array(X_adv), y_src
 
-	def clone_critic_model(self, data):
-
-		# Initialize and compile distiller
-		critic_distiller = CriticDistiller()
-		critic_distiller.distill(data)
-	
-		return critic_distiller
-	
-	def clone_classifier(self, data):
-
-		# Initialize and compile distiller
-		classifier_distiller = ClassifierDistiller()
-		classifier_distiller.distill(data)
-		return classifier_distiller
+	def clone_critic(self, x_train, y_train):
+		if not (os.path.exists("weights/cloned_critic")):
+			# Initialize and compile distiller
+			critic_distiller = CriticDistiller()
+			critic_distiller.distill(x_train, y_train)
+		
+	def clone_classifier(self, x_train, y_train):
+		if not (os.path.exists("weights/cloned_classifier/cloned_classifier")):
+			# Initialize and compile distiller
+			classifier_distiller = ClassifierDistiller()
+			classifier_distiller.distill(x_train, y_train)
 
 	def wb_attack_classifier(self, depois_model, D_src, eps):
 		adv1 = self.craft_adv_dataset(depois_model.classifier, D_src, eps, model_type='classifier')
@@ -113,8 +110,12 @@ class DePoisAttack():
 			adv_data = self.craft_adv_dataset(depois_model.classifier, D_src, eps, model_type='classifier', attack_mode=reuse_name)
 
 		return adv_data
-
 	
-	def bb_attack(self, depois_model, X_src):
-		return
-	
+	def bb_attack(self, depois_model, D_src, eps, critic_first=True):
+		if critic_first:
+			adv1 = self.craft_adv_dataset(depois_model.critic, D_src, eps, model_type='cloned_critic', critic_first=critic_first)
+			adv11 = self.craft_adv_dataset(depois_model.classifier, adv1, eps, model_type='cloned_classifier', critic_first=critic_first)
+		else:
+			adv1 = self.craft_adv_dataset(depois_model.classifier, D_src, eps, model_type='cloned_classifier', critic_first=critic_first)
+			adv11= self.craft_adv_dataset(depois_model.critic, adv1, eps, model_type='cloned_critic', critic_first=critic_first)
+		return adv11
