@@ -96,8 +96,8 @@ class CWGANGP():
                                         partial_gp_loss],
                                         optimizer=optimizer,
                                         loss_weights=[1, 1, 10])
-        print("CRITIC MODEL SUMMARY BROOOOOOOO")
-        self.critic_model.summary()
+        #print("CRITIC MODEL SUMMARY BROOOOOOOO")
+        #self.critic_model.summary()
         #-------------------------------
         # Construct Computational Graph
         #         for Generator
@@ -157,7 +157,7 @@ class CWGANGP():
         model.add(Dense(np.prod(self.img_shape), activation='tanh'))
         model.add(Reshape(self.img_shape))
 
-        model.summary()
+        #model.summary()
 
         noise = Input(shape=(self.latent_dim,))
         label = Input(shape=(1,), dtype='int32')
@@ -183,7 +183,7 @@ class CWGANGP():
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.4))
         model.add(Dense(1))
-        model.summary()
+        #model.summary()
 
         img = Input(shape=self.img_shape)
         label = Input(shape=(1,), dtype='int32')

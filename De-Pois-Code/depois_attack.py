@@ -45,7 +45,7 @@ class DePoisAttack():
 				prediction = model([img, label])
 				loss = self.wasserstein_loss(1, prediction)
 			else:
-				prediction = model.predict(img)
+				prediction = model.classifier(img)
 				loss = self.class_loss(label, prediction)
 			
 		# Get the gradients of the loss w.r.t to the input image.
@@ -55,11 +55,12 @@ class DePoisAttack():
 
 		return signed_grad.numpy()
 
-	def craft_adv_dataset(self, model, D_src, eps, model_type='critic', name='base_adv'):
-		adv_dataset_pth = f"data/adversarial/{name}_{model_type}_{eps}.pkl"
+	def craft_adv_dataset(self, model, D_src, eps, model_type='critic', name='adv_ds', critic_first=True):
+		os.makedirs('data/adversarial', exist_ok=True)
+		adv_dataset_pth = f"data/adversarial/{name}_{model_type}_{eps}_{critic_first}.pkl"
 		if os.path.isfile(adv_dataset_pth):
 			adv_dataset = pkl.load(open(adv_dataset_pth, "rb"))
-			return adv_dataset
+			return np.array(adv_dataset[0]), np.array(adv_dataset[1])
 		
 		X_src, y_src = D_src
 		X_adv = []
@@ -74,14 +75,19 @@ class DePoisAttack():
 		
 		adv_dataset = [X_adv, y_src]
 		pkl.dump(adv_dataset, open(adv_dataset_pth, "wb"))
-		return adv_dataset
+		return np.array(X_adv), y_src
 
 	def clone_model(self, src_model, clone_model):
 		return
 
-	def wb_attack(self, depois_model, D_src, eps):
-		adv_dataset_cr = self.craft_adv_dataset(depois_model.critic, D_src, eps, model_type='critic')
-		adv_dataset_cr_cl = self.craft_adv_dataset(depois_model.classifier, adv_dataset_cr, eps, model_type='classifier')
+	def wb_attack(self, depois_model, D_src, eps, critic_first=True):
+		if critic_first:
+			adv1 = self.craft_adv_dataset(depois_model.critic, D_src, eps, model_type='critic', critic_first=critic_first)
+			adv11 = self.craft_adv_dataset(depois_model.classifier, adv1, eps, model_type='classifier', critic_first=critic_first)
+		else:
+			adv1 = self.craft_adv_dataset(depois_model.classifier, D_src, eps, model_type='classifier', critic_first=critic_first)
+			adv11= self.craft_adv_dataset(depois_model.critic, adv1, eps, model_type='critic', critic_first=critic_first)
+		return adv11
 
 	
 	def bb_attack(self, depois_model, X_src):

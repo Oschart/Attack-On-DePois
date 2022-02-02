@@ -58,27 +58,26 @@ class DePoisModel():
         return z_score
 
     def predict(self, X):
-        y_pred = self.classifier.predict(X)
+        y_pred = np.argmax(self.classifier.predict(X), axis=1)
         is_poisoned_idx = self.check_poisoned(X, y_pred)
         # Deactivate the classifier label for poisoned data
         y_pred[is_poisoned_idx] = -1
         return y_pred
 
-    def evaluate(self, X, y_true):
-        y_pred = self.predict(X)
-
-        # Compute accuracy scores
-        P = metrics.precision_score(y_true, y_pred.astype(float))
-        R = metrics.recall_score(y_true, y_pred.astype(float))
-        F1 = (2 * P * R) / (P + R)
-        acc = metrics.accuracy_score(
-            label_poisoned_real, label_poisoned_fake.astype(float))
-
-        # Combine the the stats
-        stats = dict(P=P, R=R, F1=F1, acc=acc)
+    def evaluate(self,x_test, x_test_adv_cr_cl, y_test, eps):
+        x_test_adv_cr_cl = x_test_adv_cr_cl.reshape((x_test_adv_cr_cl.shape[0], 28, 28, 1))
+        y_pred = self.predict(x_test_adv_cr_cl)
+        
+        is_valid_idx = y_pred != -1
+        is_poi_idx = 1 - is_valid_idx
+        # critic_acc = poinsoned_detected/all_poisoned
+        critic_acc = np.sum(is_poi_idx)/len(x_test_adv_cr_cl)
+        # cls_acc = poisone_fooled&correctly classified/poinson_fooled
+        cls_acc = np.sum(np.logical_and(is_valid_idx, y_pred == y_test))/np.sum(is_valid_idx)
+        stats = {"critic_acc":critic_acc, "cls_acc":cls_acc}
         return stats
 
     def check_poisoned(self, X, y):
-        validity = self.critic.predict([X, y]).flatten()
+        validity = self.critic.predict([X, y])
         is_poisoned_idx = validity <= self.dec_bound
-        return is_poisoned_idx
+        return is_poisoned_idx.squeeze()

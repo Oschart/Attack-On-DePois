@@ -1,8 +1,8 @@
-
+# %%
 from tensorflow import keras
 from tensorflow.keras import layers
 import numpy as np
-
+import tensorflow as tf
 class MNISTClassifier():
     def __init__(self, load=False, load_pth='weights/mnist_classifier') -> None:
         self.model_pth = load_pth
