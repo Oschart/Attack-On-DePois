@@ -59,7 +59,7 @@ class ClassifierDistiller(keras.Model):
 
     def build_teacher_classifier(self):
 
-        return MNISTClassifier(load_pth='weights/mnist_classifier')
+        return MNISTClassifier(load=True, load_pth='weights/mnist_classifier').classifier
 
     def build_student_classifier(self):
 
@@ -113,37 +113,18 @@ class ClassifierDistiller(keras.Model):
         )
         return results
 
-    def test_step(self, data):
-        # Unpack the data
-        x, y = data
-
-        # Compute predictions
-        y_prediction = self.student(x, training=False)
-
-        # Calculate the loss
-        student_loss = self.student_loss_fn(y, y_prediction)
-
-        # Update the metrics.
-        self.compiled_metrics.update_state(y, y_prediction)
-
-        # Return a dict of performance
-        results = {m.name: m.result() for m in self.metrics}
-        results.update({"student_loss": student_loss})
-        return results
-
-    def distill(self, data):
+    def distill(self, x_train, y_train):
 
         self.compile(
-            optimizer=keras.optimizers.Adam(),
-            metrics=[keras.metrics.SparseCategoricalAccuracy()],
-            student_loss_fn=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-            distillation_loss_fn=keras.losses.KLDivergence(),
+            optimizer=tf.keras.optimizers.Adam(),
+            metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
+            student_loss_fn=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+            distillation_loss_fn=tf.keras.losses.KLDivergence(),
             alpha=0.1,
             temperature=10,
         )
-        (x_train, y_train), (x_test, y_test) = data
-        self.fit(x_train, y_train, epochs=3)
-
+        self.fit(x_train, y_train, batch_size=32, epochs=1)
+        self.student.save('weights/cloned_classifier/cloned_classifier')
 
 
 
