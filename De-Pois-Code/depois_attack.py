@@ -57,9 +57,9 @@ class DePoisAttack():
 
 		return signed_grad.numpy()
 
-	def craft_adv_dataset(self, model, D_src, eps, model_type='critic', name='adv_ds', critic_first=True):
+	def craft_adv_dataset(self, model, D_src, eps, model_type='critic', attack_mode='CL_only'):
 		os.makedirs('data/adversarial', exist_ok=True)
-		adv_dataset_pth = f"data/adversarial/{name}_{model_type}_{eps}_{critic_first}.pkl"
+		adv_dataset_pth = f"data/adversarial/adv_ds_{model_type}_{eps}_{attack_mode}.pkl"
 		if os.path.isfile(adv_dataset_pth):
 			adv_dataset = pkl.load(open(adv_dataset_pth, "rb"))
 			return np.array(adv_dataset[0]), np.array(adv_dataset[1])
@@ -94,15 +94,27 @@ class DePoisAttack():
 		classifier_distiller.distill(data)
 		return classifier_distiller
 
-	def wb_attack(self, depois_model, D_src, eps, critic_first=True):
-		if critic_first:
-			adv1 = self.craft_adv_dataset(depois_model.critic, D_src, eps, model_type='critic', critic_first=critic_first)
-			adv11 = self.craft_adv_dataset(depois_model.classifier, adv1, eps, model_type='classifier', critic_first=critic_first)
+	def wb_attack_classifier(self, depois_model, D_src, eps):
+		adv1 = self.craft_adv_dataset(depois_model.classifier, D_src, eps, model_type='classifier')
+		return adv1
+
+	def wb_attack(self, depois_model, D_src, eps, attack_mode='CL_only'):
+		if attack_mode == 'CR_then_CL':
+			adv_critic = self.craft_adv_dataset(depois_model.critic, D_src, eps, model_type='critic', attack_mode=attack_mode)
+			adv_data = self.craft_adv_dataset(depois_model.classifier, adv_critic, eps, model_type='classifier', attack_mode=attack_mode)
+		elif attack_mode == 'CL_then_CR':
+			adv_classifier = self.craft_adv_dataset(depois_model.classifier, D_src, eps, model_type='classifier', attack_mode=attack_mode)
+			adv_data = self.craft_adv_dataset(depois_model.critic, adv_classifier, eps, model_type='critic', attack_mode=attack_mode)
+		elif attack_mode == 'CR_only':
+			reuse_name = 'CR_then_CL'
+			adv_data = self.craft_adv_dataset(depois_model.critic, D_src, eps, model_type='critic', attack_mode=reuse_name)
 		else:
-			adv1 = self.craft_adv_dataset(depois_model.classifier, D_src, eps, model_type='classifier', critic_first=critic_first)
-			adv11= self.craft_adv_dataset(depois_model.critic, adv1, eps, model_type='critic', critic_first=critic_first)
-		return adv11
+			reuse_name = 'CL_then_CR'
+			adv_data = self.craft_adv_dataset(depois_model.classifier, D_src, eps, model_type='classifier', attack_mode=reuse_name)
+
+		return adv_data
 
 	
 	def bb_attack(self, depois_model, X_src):
 		return
+	

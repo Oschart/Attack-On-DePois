@@ -73,8 +73,8 @@ class DePoisModel():
         # critic_acc = poinsoned_detected/all_poisoned
         critic_acc = np.sum(is_poi_idx)/len(x_test_adv_cr_cl)
         # cls_acc = poisone_fooled&correctly classified/poinson_fooled
-        cls_acc = np.sum(np.logical_and(is_valid_idx, y_pred == y_test))/np.sum(is_valid_idx)
-        stats = {"critic_acc":critic_acc, "cls_acc":cls_acc}
+        depois_acc = (np.sum(np.logical_and(is_valid_idx, y_pred == y_test)) + np.sum(is_poi_idx))/len(x_test_adv_cr_cl)
+        stats = {"critic_acc":critic_acc, "depois_acc":depois_acc}
         return stats
 
     def check_poisoned(self, X, y):

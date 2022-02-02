@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import plotly.graph_objects as go
+
 def preprocess_data(x_train, x_test):
     x_train = x_train.reshape(x_train.shape[0], 28, 28, 1)
     x_test = x_test.reshape(x_test.shape[0], 28, 28, 1)
@@ -23,29 +24,30 @@ def graph_line(x, y, title, xaxis_title, yaxis_title, traces_names):
 
 def graph_stats(overall_stats):
     critic_accs = []
-    cls_accs = []
+    depois_accs = []
     epsilons = []
-    for critic_first in overall_stats:
+    for attack_mode in overall_stats:
         ca = []
-        clsa = []
+        depois_acc = []
         epsl = []
-        critic_first_str = 'FGSM(Critic->Cls)' if critic_first else 'FGSM(Cls->Critic)'
-        for eps, stats in overall_stats[critic_first].items():
+
+        critic_first_str = attack_mode
+        for eps, stats in overall_stats[attack_mode].items():
             ca.append(stats['critic_acc'])
-            clsa.append(stats['cls_acc'])
+            depois_acc.append(stats['depois_acc'])
             epsl.append(str(eps))
         critic_accs.append(ca)
-        cls_accs.append(clsa)
+        depois_accs.append(depois_acc)
         epsilons.append(epsl)
 
     graph_line(epsilons, critic_accs, 'Critic Accuracy vs. Perturbation Budget',
                  'Perturbation Budgets',
                   'Accuracy',
-                   traces_names = ['FGSM(Critic->Cls]', 'FGSM(Cls->Critic)']
+                   traces_names = ['FGSM(Cls_only) (baseline)', 'FGSM(Critic_only)', 'FGSM(Critic->Cls)', 'FGSM(Cls->Critic)']
                    )
-    graph_line(epsilons, cls_accs, 'De-Pois Accuracy vs. Perturbation Budget',
+    graph_line(epsilons, depois_accs, 'De-Pois Accuracy vs. Perturbation Budget',
                  'Perturbation Budgets',
                   'Accuracy',
-                   traces_names = ['FGSM(Critic->Cls]', 'FGSM(Cls->Critic)']
+                   traces_names = ['FGSM(Cls_only) (baseline)', 'FGSM(Critic_only)','FGSM(Critic->Cls)', 'FGSM(Cls->Critic)']
                    )
 
