@@ -1,9 +1,7 @@
 
-import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import numpy as np
-import os
 
 class MNISTClassifier():
     def __init__(self, load=False, load_pth='weights/mnist_classifier') -> None:
@@ -29,20 +27,23 @@ class MNISTClassifier():
                 loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                 metrics=[keras.metrics.SparseCategoricalAccuracy()],
             )
+    def preprocess_data(self, x_train, x_test):
+        x_train = x_train.reshape(x_train.shape[0], 28, 28, 1)
+        x_test = x_test.reshape(x_test.shape[0], 28, 28, 1)
+        x_train = (x_train.astype(np.float32) - 127.5) / 127.5
+        x_test = (x_test.astype(np.float32) - 127.5) / 127.5
+        return x_train, x_test
+
     def load_dataset(self):
+
         (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
-
-        # Normalize data
-        x_train = x_train.astype("float32") / 255.0
-        x_train = np.reshape(x_train, (-1, 28, 28, 1))
-
-        x_test = x_test.astype("float32") / 255.0
-        x_test = np.reshape(x_test, (-1, 28, 28, 1))
+        x_train, x_test = self.preprocess_data(x_train, x_test)
         return (x_train, y_train), (x_test, y_test)
-    def train(self):
-        (x_train, y_train), (x_test, y_test) = self.load_dataset()
+
+    def train(self, epochs=5):
+        (x_train, y_train), (_, _) = self.load_dataset()
         # Train and evaluate classifier on data.
-        self.classifier.fit(x_train, y_train, epochs=5)
+        self.classifier.fit(x_train, y_train, epochs=epochs, batch_size=32)
     def evaluate(self, x_test, y_test):
         return self.classifier.evaluate(x_test, y_test)
     def save(self, save_pth=None):
