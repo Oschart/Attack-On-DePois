@@ -12,7 +12,7 @@ def graph_line(x, y, title, xaxis_title, yaxis_title, traces_names):
     os.makedirs('graphs', exist_ok=True)
     fig = go.Figure()
     for i, trace_name in enumerate(traces_names):
-        fig.add_trace(go.Scatter(x=x, y=y[i],
+        fig.add_trace(go.Scatter(x=x[0], y=y[i],
                                  name=trace_name))
     fig.update_layout(
         title_text=title,
@@ -33,18 +33,18 @@ def graph_stats(overall_stats):
         for eps, stats in overall_stats[critic_first].items():
             ca.append(stats['critic_acc'])
             clsa.append(stats['cls_acc'])
-            epsl.append(eps)
+            epsl.append(str(eps))
         critic_accs.append(ca)
         cls_accs.append(clsa)
         epsilons.append(epsl)
 
-    graph_line(epsilons, critic_accs, 'Critic Accuracy vs. Purturbation Budget',
-                 'Purturbation Budgets',
+    graph_line(epsilons, critic_accs, 'Critic Accuracy vs. Perturbation Budget',
+                 'Perturbation Budgets',
                   'Accuracy',
                    traces_names = ['FGSM(Critic->Cls]', 'FGSM(Cls->Critic)']
                    )
-    graph_line(epsilons, cls_accs, 'De-Pois Accuracy vs. Purturbation Budget',
-                 'Purturbation Budgets',
+    graph_line(epsilons, cls_accs, 'De-Pois Accuracy vs. Perturbation Budget',
+                 'Perturbation Budgets',
                   'Accuracy',
                    traces_names = ['FGSM(Critic->Cls]', 'FGSM(Cls->Critic)']
                    )
