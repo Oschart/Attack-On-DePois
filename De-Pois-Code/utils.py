@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 
 def preprocess_data(x_train, x_test):
     x_train = x_train.reshape(x_train.shape[0], 28, 28, 1)
@@ -43,11 +44,29 @@ def graph_stats(overall_stats):
     graph_line(epsilons, critic_accs, 'Critic Accuracy vs. Perturbation Budget',
                  'Perturbation Budgets',
                   'Accuracy',
-                   traces_names = ['FGSM(Cls_only) (baseline)', 'FGSM(Critic_only)', 'FGSM(Critic->Cls)', 'FGSM(Cls->Critic)']
+                   traces_names = ['FGSM(Critic_only)', 'FGSM(Cls_only) (baseline)', 'FGSM(Critic->Cls)', 'FGSM(Cls->Critic)']
                    )
     graph_line(epsilons, depois_accs, 'De-Pois Accuracy vs. Perturbation Budget',
                  'Perturbation Budgets',
                   'Accuracy',
-                   traces_names = ['FGSM(Cls_only) (baseline)', 'FGSM(Critic_only)','FGSM(Critic->Cls)', 'FGSM(Cls->Critic)']
+                   traces_names = ['FGSM(Critic_only)', 'FGSM(Cls_only) (baseline)', 'FGSM(Critic->Cls)', 'FGSM(Cls->Critic)']
                    )
 
+
+def vis_predictions(x_eval, y_pred, n_val):
+    rows, cols = 4, 4
+
+    fig,ax = plt.subplots(nrows = rows, ncols = cols)
+
+    ids = np.random.randint(0,n_val,rows*cols)
+    for i in range(cols):   
+        for j in range(rows):
+            ax[j][i].set_title('predicted label: {0}'. format(y_pred[ids[(i*rows)+j]]))
+            two_d = (np.reshape(x_eval[ids[(i*rows)+j]], (28, 28)))
+            ax[j][i].imshow(two_d, cmap='gray')
+            ax[j][i].axes.get_xaxis().set_visible(False)
+            ax[j][i].axes.get_yaxis().set_visible(False)
+
+    plt.tight_layout()
+    plt.show()
+    #plt.savefig()
