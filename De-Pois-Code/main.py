@@ -1,16 +1,9 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Apr 22 21:07:40 2020
-
-@author: zxx
-"""
-# %%
 import os
 import matplotlib.pyplot as plt
 import time
 import numpy as np
 from sklearn import metrics
-import keras
+import tensorflow.keras as keras 
 
 os.makedirs('images', exist_ok=True)
 os.makedirs('data/weights', exist_ok=True)
@@ -64,8 +57,8 @@ def poi_data(poison_rate):
     poison_number = int(poison_rate * 50000)
     data = np.load("dataset/GP_mnist.npz")
     print(list(data.keys()))
-    poisoned_x_data = data["X"][:, 4, :,:]
-    poisoned_y_data = data["Y"][:, 4]-1
+    poisoned_x_data = data["X"][:, 0, :,:]
+    poisoned_y_data = data["Y"][:, 0]-1
     poisoned_x_data = poisoned_x_data * 255
     poisoned_x_data = poisoned_x_data.reshape(poisoned_x_data.shape[0],28,28, 1)
     poisoned_x_data = (poisoned_x_data.astype(np.float32) - 127.5) / 127.5
@@ -123,7 +116,7 @@ def model_defense(poi_rate,  epochs, will_load_model=False):
     plt.hist(D_poi[0:50000],bins = 100,color = 'b')
     plt.hist(D_poi[50000:],bins = 100,color = 'r')
     
-    F1, P, R, acc = count_score(D_poi, poison_number)
+    F1, P, R, acc, acc_adv, acc_real = count_score(D_poi, poison_number)
     print('Accuracy of De-pois:')
     print(acc)
     print('Precision of De-pois：')
@@ -132,6 +125,8 @@ def model_defense(poi_rate,  epochs, will_load_model=False):
     print(R)
     print('F1 of De-pois：')
     print(F1)
+    print('acc_adv：')
+    print(acc_adv)
     
     return None
 
@@ -144,5 +139,5 @@ if __name__ == '__main__':
     #data = poi_data(5)
     #dataset = load_data()
     #generated_data = np.load('data/Generator_data_48000_200000.npy')
-    TrueAndGeneratorData(know_rate, steps)
+    #TrueAndGeneratorData(know_rate, steps)
     model_defense(poi_rate, steps, will_load_model=True)
