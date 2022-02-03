@@ -30,6 +30,7 @@ else:
             print(eps)
             x_test_adv, _ = depois_attack.wb_attack(depois_model, (x_test, y_test), eps, attack_mode=attack_mode)
             stats = depois_model.evaluate(x_test, x_test_adv, y_test, eps)
+            #vis_predictions(x_test_adv, y_test, len(y_test))
             overall_stats[attack_mode][eps] = stats
             print(stats)
     pickle.dump(overall_stats, open('stats/overall_stats.pkl', 'wb'))

@@ -71,18 +71,21 @@ class DePoisModel():
         return z_score
 
     def predict(self, X, y=None):
-        if y:
-            y_pred = y
-        else:
+        if y is not None:
+            y_critic = y.copy().astype(np.int64)
             y_pred = np.argmax(self.classifier.predict(X), axis=1)
-        is_poisoned_idx = self.check_poisoned(X, y_pred)
+        else:
+            y_critic = np.argmax(self.classifier.predict(X), axis=1)
+            y_pred = y_critic.copy()
+
+        is_poisoned_idx = self.check_poisoned(X, y_critic)
         # Deactivate the classifier label for poisoned data
         y_pred[is_poisoned_idx] = -1
         return y_pred
 
     def evaluate(self,x_test, x_test_adv_cr_cl, y_test, eps):
         x_test_adv_cr_cl = x_test_adv_cr_cl.reshape((x_test_adv_cr_cl.shape[0], 28, 28, 1))
-        y_pred = self.predict(x_test_adv_cr_cl)
+        y_pred = self.predict(x_test_adv_cr_cl, y=None)
         
         is_valid_idx = y_pred != -1
         is_poi_idx = 1 - is_valid_idx
