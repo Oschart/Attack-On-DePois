@@ -52,6 +52,19 @@ class DePoisModel():
     def load_classifier(self):
         self.classifier = MNISTClassifier(load=True)
 
+    def load_cloned_critic(self):
+        epochs = 10000
+        batch_size = 32
+        sample_interval = 100
+        wgan = CWGANGP(epochs, batch_size, sample_interval)
+        wgan.critic.load_weights(
+            f'weights/cloned_critic/cloned_critic{epochs}')
+        self.critic = wgan.critic
+
+    def load_cloned_classifier(self):
+        self.classifier = MNISTClassifier(load=True, load_pth='weights/cloned_classifier/cloned_classifier')
+
+
     def compute_decision_bound(self, X_t, y_t):
         validity = self.critic.predict([X_t, y_t]).flatten()
         z_score = np.mean(validity) - np.std(validity)
