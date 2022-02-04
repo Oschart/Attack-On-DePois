@@ -40,6 +40,9 @@ class DePoisModel():
         self.load_critic()
         self.load_classifier()
 
+        self.load_shadow_critic()
+        self.load_shadow_classifier()
+
     def load_critic(self):
         epochs = 10000
         batch_size = 32
@@ -52,18 +55,17 @@ class DePoisModel():
     def load_classifier(self):
         self.classifier = MNISTClassifier(load=True)
 
-    def load_cloned_critic(self):
+    def load_shadow_critic(self):
         epochs = 10000
         batch_size = 32
         sample_interval = 100
         wgan = CWGANGP(epochs, batch_size, sample_interval)
         wgan.critic.load_weights(
-            f'weights/cloned_critic/cloned_critic{epochs}')
-        self.critic = wgan.critic
+            f'weights/shadow_critic/shadow_critic')
+        self.shadow_critic = wgan.critic
 
-    def load_cloned_classifier(self):
-        self.classifier = MNISTClassifier(load=True, load_pth='weights/cloned_classifier/cloned_classifier')
-
+    def load_shadow_classifier(self):
+        self.shadow_classifier = MNISTClassifier(load=True, load_pth='weights/shadow_classifier/shadow_classifier')
 
     def compute_decision_bound(self, X_t, y_t):
         validity = self.critic.predict([X_t, y_t]).flatten()

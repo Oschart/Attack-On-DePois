@@ -124,7 +124,7 @@ class ClassifierDistiller(keras.Model):
             temperature=10,
         )
         self.fit(x_train, y_train, batch_size=32, epochs=1)
-        self.student.save('weights/cloned_classifier/cloned_classifier')
+        self.student.save('weights/shadow_classifier/shadow_classifier')
 
 
 

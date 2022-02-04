@@ -1,8 +1,11 @@
 # %%
+import keras.backend as K
 from tensorflow import keras
 from tensorflow.keras import layers
 import numpy as np
 import tensorflow as tf
+K.set_image_data_format('channels_first')
+
 class MNISTClassifier():
     def __init__(self, load=False, load_pth='weights/mnist_classifier') -> None:
         self.model_pth = load_pth

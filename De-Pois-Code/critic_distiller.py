@@ -133,5 +133,5 @@ class CriticDistiller(keras.Model):
         )
         self.fit(x_train, y_train, batch_size=2084, epochs=100)
         #self.predict([x_train[0], y_train[0]])
-        self.student.save_weights('weights/cloned_critic/cloned_critic', overwrite=True)
+        self.student.save_weights('weights/shadow_critic/shadow_critic', overwrite=True)
 
