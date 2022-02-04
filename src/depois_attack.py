@@ -1,4 +1,5 @@
 import keras.backend as K
+from tensorflow import keras
 
 import os
 import math
@@ -24,8 +25,6 @@ from tqdm import tqdm
 
 from critic_distiller import CriticDistiller
 from classifier_distiller import ClassifierDistiller
-from main import *
-from main import load_data
 from mimic_model_construction import *
 
 enable_eager_execution()

@@ -21,8 +21,6 @@ from tensorflow.python.framework.ops import (disable_eager_execution,
                                              enable_eager_execution)
 from tqdm import tqdm
 
-from main import *
-from main import load_data
 from mimic_model_construction import *
 from mnist_classifier import MNISTClassifier
 

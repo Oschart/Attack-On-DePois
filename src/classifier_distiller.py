@@ -12,12 +12,10 @@ from keras.models import Sequential, Model, load_model
 from keras.backend import sign
 import tensorflow as tf
 from mimic_model_construction import *
-from main import load_data
 import matplotlib.pyplot as plt
 import numpy as np
 import pickle as pickle
 from tqdm import tqdm
-from main import *
 from mnist_classifier import MNISTClassifier
 from tensorflow.python.framework.ops import disable_eager_execution, enable_eager_execution
 enable_eager_execution()
