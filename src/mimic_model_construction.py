@@ -96,7 +96,6 @@ class CWGANGP():
                                         partial_gp_loss],
                                         optimizer=optimizer,
                                         loss_weights=[1, 1, 10])
-        #self.critic_model.summary()
         #-------------------------------
         # Construct Computational Graph
         #         for Generator
