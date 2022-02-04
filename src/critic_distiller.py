@@ -88,7 +88,7 @@ class CriticDistiller(keras.Model):
 
         wgan = CWGANGP(epochs, batch_size, sample_interval)
         wgan.critic.trainable = True
-        wgan.critic.load_weights(f'data/weights/discriminator_CWGANGP_{epochs}')
+        wgan.critic.load_weights(f'weights/critic/discriminator_CWGANGP_{epochs}')
         return wgan.critic
 
     def train_step(self, data):

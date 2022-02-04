@@ -49,7 +49,7 @@ class DePoisModel():
         sample_interval = 100
         wgan = CWGANGP(epochs, batch_size, sample_interval)
         wgan.critic.load_weights(
-            f'data/weights/discriminator_CWGANGP_{epochs}')
+            f'weights/critic/discriminator_CWGANGP_{epochs}')
         self.critic = wgan.critic
 
     def load_classifier(self):
